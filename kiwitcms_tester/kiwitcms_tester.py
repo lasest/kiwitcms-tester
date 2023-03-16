@@ -1,3 +1,4 @@
+import dataclasses
 import os
 import importlib
 import importlib.resources
@@ -9,6 +10,23 @@ import sys
 import shutil
 
 import pytest
+
+
+@dataclass()
+class KiwiBackendConfig:
+    """Stores data which will be written to ~/.tcms.conf to be used by Kiwi Backend to connect to the api"""
+    kiwi_url: str
+    username: str
+    password: str
+
+
+@dataclass
+class Environment:
+    """Stores environment variables which will be set before using tcms-junit.xml-plugin"""
+    tcms_product: str
+    tcms_product_version: str
+    tcms_build: str
+    tcms_plan_id: str = ""
 
 
 @dataclass
@@ -23,47 +41,53 @@ class TestDescription:
 
 class Tester:
 
-    def __init__(self, tests_dir_path: str, output_dir_path: str):
+    def __init__(self, tests_dir_path: str, output_dir_path: str, environment: Environment):
         """
+        Creates Tester instance and reads some assets
         :param tests_dir_path: path to the directory containing pytest test files. Each file should start with test_
         :param output_dir_path: path to the directory where output junit.xml files will be written
         """
-        self.tests_path = tests_dir_path
-        self.output_dir_path = output_dir_path
+        self.tests_path: str = tests_dir_path
+        self.output_dir_path: str = output_dir_path
+        self.environment = environment
         self.performed_tests: list[TestDescription] = []
 
-        self.environment_variables = {
-            "product": "M-EDC\ 2.0",
-            "version": "unspecified",
-            "build": "1",
-            "plan_id": None,
-            "test_result_path": None
-        }
-
+        # Get paths to assets
         upload_script_template_path = str(importlib.resources.path("assets", "upload_test_results_template.sh"))
         self.conftest_script_path = str(importlib.resources.path("assets", "conftest.py"))
         kiwi_backend_api_config_path = str(importlib.resources.path("assets", "template_tcms.conf"))
 
-        with open(str(upload_script_template_path), 'r') as f:
+        # Read template assets
+        with open(upload_script_template_path, 'r') as f:
             self.upload_script_template = string.Template(f.read())
 
         with open(kiwi_backend_api_config_path, 'r') as f:
             self.kiwi_backend_config_template = string.Template(f.read())
 
-    def config_kiwi_credentials(self, kiwi_url, username, password):
-        credentials = {
-            "kiwi_url": kiwi_url + "/xml-rpc",
-            "username": username,
-            "password": password
-        }
+    def config_kiwi_credentials(self, config: KiwiBackendConfig) -> None:
+        """
+        Creates a .tcms.conf file which will be used by kiwi backend to connect to the api. The information will be
+        stored at ~/.tcms.conf in UNENCRYPTED form
+        :param config: dataclass holding a URL of your kiwi instance (i.e. kiwi.example.com) and user credentials
+        """
+        config.kiwi_url = config.kiwi_url.rstrip("/")
+        if not config.kiwi_url.endswith("/xml-rpc"):
+            config.kiwi_url = config.kiwi_url + "/xml-rpc"
+        mapping = dataclasses.asdict(config)
 
-        config = self.kiwi_backend_config_template.substitute(credentials)
+        config_text = self.kiwi_backend_config_template.substitute(mapping)
         home_path = os.path.expanduser("~")
         with open(os.path.join(home_path, ".tcms.conf"), "w") as fh:
-            fh.write(config)
+            fh.write(config_text)
 
     @staticmethod
     def load_module(module_name: str, module_path: str):
+        """
+        Helper method to load a test module by its path
+        :param module_name: name of the module, i.e. filename of the module w/o .py
+        :param module_path: path to the module
+        :return: module object
+        """
         spec = importlib.util.spec_from_file_location(module_name, module_path)
         module = importlib.util.module_from_spec(spec)
 
@@ -71,13 +95,19 @@ class Tester:
         spec.loader.exec_module(module)
         return module
 
-    def perform_all_tests(self):
+    def perform_all_tests(self) -> None:
+        """Runs all tests in test_ files found in the self.tests_path directory"""
         test_files = [filename for filename in os.listdir(self.tests_path) if filename.startswith("test")]
 
         for filename in test_files:
             self.perform_single_test(filename)
 
-    def perform_single_test(self, filename):
+    def perform_single_test(self, filename: str) -> None:
+        """
+        Runs a single test file with specified filename, which will be searched for in the self.tests_path directory
+        :param filename: filename of the test file
+        :rtype: object
+        """
         module_name = filename.replace(".py", "")
         module_path = os.path.join(self.tests_path, filename)
         test_module = Tester.load_module(module_name, module_path)
@@ -88,18 +118,33 @@ class Tester:
         if not os.path.exists(os.path.join(self.tests_path, "conftest.py")):
             shutil.copy(self.conftest_script_path, self.tests_path)
 
-        pytest.main(["--junit-xml", output_path, self.conftest_script_path, test_filepath])
-        test = TestDescription(test_plan_id=test_module.TEST_PLAN_ID, test_result_path=output_path)
+        pytest.main(["--junit-xml", output_path, test_filepath])
+
+        try:
+            plan_id = test_module.TEST_PLAN_ID
+        except AttributeError:
+            print(f"Failed to get the value of {test_module}.TEST_PLAN_ID. Does the module implement it?")
+            plan_id = ""
+
+        test = TestDescription(test_plan_id=plan_id, test_result_path=output_path)
         self.performed_tests.append(test)
 
-    def upload_all_test_results(self):
+    def upload_all_test_results(self) -> None:
+        """
+        Uploads all test results to Kiwi. Test results are expected to be junit.xml files located
+        at self.output_dir_path
+        """
         for test in self.performed_tests:
             self.upload_single_test_result(test)
 
-    def upload_single_test_result(self, test_description: TestDescription):
-        environment = self.environment_variables.copy()
-        environment["plan_id"] = test_description.test_plan_id
-        environment["test_result_path"] = test_description.test_result_path
+    def upload_single_test_result(self, test_description: TestDescription) -> None:
+        """
+        Uploads result of a single Test plan which is expected to be in a separate junit.xml file
+        :param test_description:
+        """
+        self.environment.tcms_plan_id = test_description.test_plan_id
+        mapping = dataclasses.asdict(self.environment)
+        mapping["test_result_path"] = test_description.test_result_path
 
-        script = self.upload_script_template.substitute(environment)
+        script = self.upload_script_template.substitute(mapping)
         subprocess.Popen(script, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
