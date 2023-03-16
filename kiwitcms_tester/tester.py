@@ -72,7 +72,9 @@ class Tester:
         """
         config.kiwi_url = config.kiwi_url.rstrip("/")
         if not config.kiwi_url.endswith("/xml-rpc"):
-            config.kiwi_url = config.kiwi_url + "/xml-rpc"
+            config.kiwi_url = config.kiwi_url + "/xml-rpc/"
+        else:
+            config.kiwi_url = config.kiwi_url + "/"
         mapping = dataclasses.asdict(config)
 
         config_text = self.kiwi_backend_config_template.substitute(mapping)
@@ -134,8 +136,10 @@ class Tester:
         Uploads all test results to Kiwi. Test results are expected to be junit.xml files located
         at self.output_dir_path
         """
+        print("\nStarting batch upload of test results\n")
         for test in self.performed_tests:
             self.upload_single_test_result(test)
+        print("Finished batch upload of test results")
 
     def upload_single_test_result(self, test_description: TestDescription) -> None:
         """
@@ -146,5 +150,15 @@ class Tester:
         mapping = dataclasses.asdict(self.environment)
         mapping["test_result_path"] = test_description.test_result_path
 
+        print(f'Uploading test results for Test plan ID: {test_description.test_plan_id}')
+
         script = self.upload_script_template.substitute(mapping)
-        subprocess.Popen(script, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+        popen = subprocess.Popen(script, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+        std_out, std_err = popen.communicate()
+
+        if std_out:
+            print(f"Output: {std_out.decode()}")
+        if std_err:
+            print(f"ERROR: {std_err.decode()}\n")
+        else:
+            print("Success\n")
