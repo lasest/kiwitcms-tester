@@ -53,7 +53,8 @@ class Tester:
         self.performed_tests: list[TestDescription] = []
 
         # Get paths to assets
-        upload_script_template_path = str(importlib.resources.path("kiwitcms_tester.assets", "upload_test_results_template.sh"))
+        upload_script_template_path = str(
+            importlib.resources.path("kiwitcms_tester.assets", "upload_test_results_template.sh"))
         self.conftest_script_path = str(importlib.resources.path("kiwitcms_tester.assets", "conftest.py"))
         kiwi_backend_api_config_path = str(importlib.resources.path("kiwitcms_tester.assets", "template_tcms.conf"))
 
@@ -104,10 +105,11 @@ class Tester:
         for filename in test_files:
             self.perform_single_test(filename)
 
-    def perform_single_test(self, filename: str) -> None:
+    def perform_single_test(self, filename: str, method_selector: str = "") -> None:
         """
         Runs a single test file with specified filename, which will be searched for in the self.tests_path directory
         :param filename: filename of the test file
+        :param method_selector: string which will be passed as pytest -k argument to filter test cases by their function/method names
         :rtype: object
         """
         module_name = filename.replace(".py", "")
@@ -120,7 +122,14 @@ class Tester:
         if not os.path.exists(os.path.join(self.tests_path, "conftest.py")):
             shutil.copy(self.conftest_script_path, self.tests_path)
 
-        pytest.main(["--junit-xml", output_path, test_filepath])
+        pytest_args = ["--junit-xml", output_path]
+        if method_selector:
+            pytest_args.append("-k")
+            pytest_args.append(method_selector)
+
+        pytest_args.append(test_filepath)
+
+        pytest.main(pytest_args)
 
         try:
             plan_id = test_module.TEST_PLAN_ID
