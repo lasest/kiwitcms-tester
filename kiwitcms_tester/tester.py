@@ -105,6 +105,29 @@ class Tester:
         for filename in test_files:
             self.perform_single_test(filename)
 
+    def copy_conftest_to_tests_dir(self):
+        """
+        Checks if conftest.py exists in self.tests_path. If it doesn't, copies the conftest template there. If it does,
+        checks if it already contains the hook declaration and inserts it at the beginning of the file if not.
+        """
+        conftest_dest_path = os.path.join(self.tests_path, "conftest.py")
+        if not os.path.exists(conftest_dest_path):
+            shutil.copy(self.conftest_script_path, conftest_dest_path)
+        else:
+            with open(self.conftest_script_path, "r") as fh:
+                conftest_template = fh.read()
+
+            with open(conftest_dest_path, "r") as fh:
+                current_conftest = fh.read()
+
+            hook_declaration = "def pytest_itemcollected"
+            if hook_declaration not in current_conftest:
+                current_conftest = conftest_template + current_conftest
+
+                with open(conftest_dest_path, "w") as fh:
+                    fh.write(current_conftest)
+
+
     def perform_single_test(self, filename: str, method_selector: str = "") -> None:
         """
         Runs a single test file with specified filename, which will be searched for in the self.tests_path directory
@@ -125,8 +148,7 @@ class Tester:
         test_filepath = os.path.join(self.tests_path, f"{module_name}.py")
         output_path = os.path.join(self.output_dir_path, f"{plan_id}-{module_name}.xml")
 
-        if not os.path.exists(os.path.join(self.tests_path, "conftest.py")):
-            shutil.copy(self.conftest_script_path, self.tests_path)
+        self.copy_conftest_to_tests_dir()
 
         pytest_args = ["--junit-xml", output_path]
         if method_selector:
@@ -139,7 +161,11 @@ class Tester:
         test = TestDescription(test_plan_id=plan_id, test_result_path=output_path)
         self.performed_tests.append(test)
 
-    def get_performed_tests_from_test_results(self):
+    def get_performed_tests_from_test_results(self) -> None:
+        """
+        Get the list of files in the self.output_dir_path. Parse TCMS_PLAN_ID from filenames and form a list of
+        self.performed_tests
+        """
         result_filenames = [filename for filename in os.listdir(self.output_dir_path) if filename.endswith(".xml")]
         for filename in result_filenames:
             path = os.path.join(self.output_dir_path, filename)

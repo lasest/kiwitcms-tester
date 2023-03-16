@@ -8,4 +8,4 @@
 
 [X] Implement uploading of test results without running the tests themselves
 
-[ ] Implement inserting conftest.py contents to the already existing conftest.py instead of overwriting the file
+[X] Implement inserting conftest.py contents to the already existing conftest.py instead of overwriting the file

@@ -1,3 +1,8 @@
+# -----------------------------------------------------
+# This is a template created by kiwitcms-tester.py
+# It will be inserted at the beginning of this file if "def pytest_itemcollected" is not found
+# -----------------------------------------------------
+
 def pytest_itemcollected(item):
     par = item.parent.obj
     node = item.obj
@@ -8,3 +13,7 @@ def pytest_itemcollected(item):
 
     if suf:
         item._nodeid = suf
+
+# -----------------------------------------------------
+# End of template
+# -----------------------------------------------------
