@@ -114,10 +114,16 @@ class Tester:
         """
         module_name = filename.replace(".py", "")
         module_path = os.path.join(self.tests_path, filename)
+
         test_module = Tester.load_module(module_name, module_path)
+        try:
+            plan_id = test_module.TEST_PLAN_ID
+        except AttributeError:
+            print(f"Failed to get the value of {test_module}.TEST_PLAN_ID. Does the module implement it?")
+            plan_id = ""
 
         test_filepath = os.path.join(self.tests_path, f"{module_name}.py")
-        output_path = os.path.join(self.output_dir_path, f"{module_name}.xml")
+        output_path = os.path.join(self.output_dir_path, f"{plan_id}-{module_name}.xml")
 
         if not os.path.exists(os.path.join(self.tests_path, "conftest.py")):
             shutil.copy(self.conftest_script_path, self.tests_path)
@@ -128,23 +134,28 @@ class Tester:
             pytest_args.append(method_selector)
 
         pytest_args.append(test_filepath)
-
         pytest.main(pytest_args)
-
-        try:
-            plan_id = test_module.TEST_PLAN_ID
-        except AttributeError:
-            print(f"Failed to get the value of {test_module}.TEST_PLAN_ID. Does the module implement it?")
-            plan_id = ""
 
         test = TestDescription(test_plan_id=plan_id, test_result_path=output_path)
         self.performed_tests.append(test)
+
+    def get_performed_tests_from_test_results(self):
+        result_filenames = [filename for filename in os.listdir(self.output_dir_path) if filename.endswith(".xml")]
+        for filename in result_filenames:
+            path = os.path.join(self.output_dir_path, filename)
+            plan_id = filename.split("-")[0]
+            self.performed_tests.append(TestDescription(test_plan_id=plan_id,
+                                                        test_result_path=path))
 
     def upload_all_test_results(self) -> None:
         """
         Uploads all test results to Kiwi. Test results are expected to be junit.xml files located
         at self.output_dir_path
         """
+        if not self.performed_tests:
+            print("This tester performed no tests. Getting list of test results from output dir...")
+            self.get_performed_tests_from_test_results()
+
         print("\nStarting batch upload of test results\n")
         for test in self.performed_tests:
             self.upload_single_test_result(test)

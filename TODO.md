@@ -1,5 +1,11 @@
-1. DONE Сделать сетап данных для входа в систему
+[X] Implement setup of credentials for kiwi backend api
 
-2. DONE Проверять нет ли уже conftest.py перед копированием
+[X] Check if conftest.py file already exists before copying it
 
-3. DONE Сделать нормальную документацию
+[X] Improve documentation
+
+[X] Change naming convention of test results to include test plan number
+
+[X] Implement uploading of test results without running the tests themselves
+
+[ ] Implement inserting conftest.py contents to the already existing conftest.py instead of overwriting the file
