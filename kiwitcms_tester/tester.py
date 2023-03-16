@@ -53,9 +53,9 @@ class Tester:
         self.performed_tests: list[TestDescription] = []
 
         # Get paths to assets
-        upload_script_template_path = str(importlib.resources.path("assets", "upload_test_results_template.sh"))
-        self.conftest_script_path = str(importlib.resources.path("assets", "conftest.py"))
-        kiwi_backend_api_config_path = str(importlib.resources.path("assets", "template_tcms.conf"))
+        upload_script_template_path = str(importlib.resources.path("kiwitcms_tester.assets", "upload_test_results_template.sh"))
+        self.conftest_script_path = str(importlib.resources.path("kiwitcms_tester.assets", "conftest.py"))
+        kiwi_backend_api_config_path = str(importlib.resources.path("kiwitcms_tester.assets", "template_tcms.conf"))
 
         # Read template assets
         with open(upload_script_template_path, 'r') as f:
