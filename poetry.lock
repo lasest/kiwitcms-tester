@@ -74,7 +74,7 @@ python-versions = ">=3.7"
 
 [[package]]
 name = "junitparser"
-version = "2.5.0"
+version = "2.8.0"
 description = "Manipulates JUnit/xUnit Result XML files"
 category = "main"
 optional = false
@@ -85,15 +85,15 @@ future = "*"
 
 [[package]]
 name = "kiwitcms-junit-xml-plugin"
-version = "11.3"
+version = "12.0"
 description = "junit.xml plugin for Kiwi TCMS test case management system"
 category = "main"
 optional = false
 python-versions = "*"
 
 [package.dependencies]
-junitparser = "2.5.0"
-tcms-api = "11.3"
+junitparser = "2.8.0"
+tcms-api = "11.4"
 
 [[package]]
 name = "packaging"
@@ -155,7 +155,7 @@ use-chardet-on-py3 = ["chardet (>=3.0.2,<6)"]
 
 [[package]]
 name = "tcms-api"
-version = "11.3"
+version = "11.4"
 description = "Python API for Kiwi"
 category = "main"
 optional = false
@@ -191,7 +191,7 @@ socks = ["PySocks (>=1.5.6,!=1.5.7,<2.0)"]
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.10"
-content-hash = "3ebca9010932669a3c88760d6ea06bb0c141d04fb9676ea1fce0e6f9a9ea9b4f"
+content-hash = "33fc5036b935e99d8d362b49dc69e62b27def4e0812b145614e18392792b6c60"
 
 [metadata.files]
 attrs = [
@@ -299,12 +299,12 @@ iniconfig = [
     {file = "iniconfig-2.0.0.tar.gz", hash = "sha256:2d91e135bf72d31a410b17c16da610a82cb55f6b0477d1a902134b24a455b8b3"},
 ]
 junitparser = [
-    {file = "junitparser-2.5.0-py2.py3-none-any.whl", hash = "sha256:c6b09dd3e6bf933f60dd3fecd6581210645298980ca7b5331a0b448de9feb714"},
-    {file = "junitparser-2.5.0.tar.gz", hash = "sha256:47f97aeb7e08db7fad3311b70c19f63a54f6149499d64f488524b9dc10961ff6"},
+    {file = "junitparser-2.8.0-py2.py3-none-any.whl", hash = "sha256:e1a7d41e0c92ca032c46eed07a6268c478f90ec1f411ea8a76b69f245e57cfb6"},
+    {file = "junitparser-2.8.0.tar.gz", hash = "sha256:a8d4290ab9fb93f2015e0dbef61ef93b7ea110e99099087a453f55c8e1481adf"},
 ]
 kiwitcms-junit-xml-plugin = [
-    {file = "kiwitcms-junit.xml-plugin-11.3.tar.gz", hash = "sha256:ec71721b05a647a319c0c0c151cd4e2ad7f58e89a0a08537737c7ab852467949"},
-    {file = "kiwitcms_junit.xml_plugin-11.3-py3-none-any.whl", hash = "sha256:5b5fb1022d279f168fb44490b24544a70937f7dd7b50dc1e845398d4b858d8a4"},
+    {file = "kiwitcms-junit.xml-plugin-12.0.tar.gz", hash = "sha256:1e7fb3d94d52f728dd22cf1c6184814272143bc8533884daa15521f53fa82965"},
+    {file = "kiwitcms_junit.xml_plugin-12.0-py3-none-any.whl", hash = "sha256:863a270b2935796b6d51e87b74f76c71d6861e7fdcb5a0b1d59586dfb11563f0"},
 ]
 packaging = [
     {file = "packaging-23.0-py3-none-any.whl", hash = "sha256:714ac14496c3e68c99c29b00845f7a2b85f3bb6f1078fd9f72fd20f0570002b2"},
@@ -323,8 +323,8 @@ requests = [
     {file = "requests-2.28.2.tar.gz", hash = "sha256:98b1b2782e3c6c4904938b84c0eb932721069dfdb9134313beff7c83c2df24bf"},
 ]
 tcms-api = [
-    {file = "tcms-api-11.3.tar.gz", hash = "sha256:6f1ed1503430442593cc9bb9c99f295575627b31a4f99b9071108e1232b7f532"},
-    {file = "tcms_api-11.3-py3-none-any.whl", hash = "sha256:7992383ad4dea167dd297aad06fab5c99737b808340b914e531e66c20a981dff"},
+    {file = "tcms-api-11.4.tar.gz", hash = "sha256:785ba4af1604a2a43e04ba482f7ed73255dfec99c1289508b623a99467eeea51"},
+    {file = "tcms_api-11.4-py3-none-any.whl", hash = "sha256:73ba88e03fed2da46b6e244aa9d37fdae4753e9a44a4d08b96a01c90118ebb2e"},
 ]
 tomli = [
     {file = "tomli-2.0.1-py3-none-any.whl", hash = "sha256:939de3e7a6161af0c887ef91b7d41a53e7c5a1ca976325f429cb46ea9bc30ecc"},

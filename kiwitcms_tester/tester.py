@@ -127,7 +127,6 @@ class Tester:
                 with open(conftest_dest_path, "w") as fh:
                     fh.write(current_conftest)
 
-
     def perform_single_test(self, filename: str, method_selector: str = "") -> None:
         """
         Runs a single test file with specified filename, which will be searched for in the self.tests_path directory
